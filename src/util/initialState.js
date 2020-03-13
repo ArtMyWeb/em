@@ -53,6 +53,12 @@ export const initialState = () => {
     toolbarOverlay: null,
     scrollPrioritized: false,
 
+    // import
+    importing: false,
+    importingCompleted: false,
+    importingCurrentItem: null,
+    importingItemsLength: null,
+
     // cheap trick to re-render when thoughtIndex has been updated
     dataNonce: 0,
     modals: {},

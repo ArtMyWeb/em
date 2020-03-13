@@ -4,6 +4,9 @@ import { store } from '../store.js'
 import {
   EM_TOKEN,
   ROOT_TOKEN,
+  IMPORT_IMPORTING,
+  IMPORT_HIDE_MODAL,
+  IMPORT_MIN_THOUGHTS_LENGTH,
 } from '../constants.js'
 
 // util
@@ -30,7 +33,10 @@ import {
 } from '../util.js'
 
 /** Imports the given text or html into the given thoughts */
-export const importText = (thoughtsRanked, inputText, { preventSync } = {}) => {
+export const importText = (thoughtsRanked, inputText, callback, { preventSync } = {}) => {
+
+  setTimeout(() => {
+  }, IMPORT_IMPORTING)
 
   const decodedInputText = he.decode(inputText)
 
@@ -86,6 +92,11 @@ export const importText = (thoughtsRanked, inputText, { preventSync } = {}) => {
     }
   }
   else {
+    if(numLines >= IMPORT_MIN_THOUGHTS_LENGTH){
+      store.dispatch({ type: 'setImporting', val: true })
+      store.dispatch({ type: 'setImportingCurrentItem', num: 1 })
+      store.dispatch({ type: 'setImportingItemsLength', n: numLines })
+    }
 
     // keep track of the last thought of the first level, as this is where the selection will be restored to
     let lastThoughtFirstLevel = thoughtsRanked // eslint-disable-line fp/no-let
@@ -108,6 +119,8 @@ export const importText = (thoughtsRanked, inputText, { preventSync } = {}) => {
     const next = nextSibling(destValue, context, destRank)
     const rankIncrement = next ? (next.rank - rank) / numLines : 1
     let lastValue // eslint-disable-line fp/no-let
+
+    const prevRank = rank - 1;
 
     // import notes from WorkFlowy
     let insertAsNote = false // eslint-disable-line fp/no-let
@@ -193,6 +206,10 @@ export const importText = (thoughtsRanked, inputText, { preventSync } = {}) => {
         // only update lastValue for non-notes. Otherwise the next thought will incorrectly be added to the note and not the thought itself.
         else {
           // update lastValue and increment rank for next iteration
+          // console.log('tought importing: ', (rank - prevRank));
+          if(numLines >= IMPORT_MIN_THOUGHTS_LENGTH){
+            store.dispatch({ type: 'setImportingCurrentItem', num: (rank - prevRank) })
+          }
           lastValue = value
           rank += rankIncrement
         }
@@ -222,8 +239,21 @@ export const importText = (thoughtsRanked, inputText, { preventSync } = {}) => {
               { offset: lastThoughtFirstLevel.value.length }
             )
           }
+
+          if(numLines >= IMPORT_MIN_THOUGHTS_LENGTH) {
+            store.dispatch({ type: 'setImporting', val: false })
+            store.dispatch({ type: 'setImportingCompleted', val: true })
+            setTimeout(() => {
+              store.dispatch({ type: 'setImportingCompleted', val: false })
+              store.dispatch({ type: 'setImportingCurrentItem', num: null })
+              store.dispatch({ type: 'setImportingItemsLength', n: null })
+            }, IMPORT_HIDE_MODAL)
+          }
         }
       })
+    }
+    else {
+
     }
 
     return Promise.resolve({

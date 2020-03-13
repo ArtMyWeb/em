@@ -8,6 +8,7 @@
   "private": true,
   "dependencies": {
     "@bit/mui-org.material-ui.swipeable-drawer": "^4.5.2",
+    "@material-ui/core": "^4.9.5",
     "classnames": "^2.2.6",
     "emitter20": "^1.0.1",
     "emoji-strip": "^1.0.1",

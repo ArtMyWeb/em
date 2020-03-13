@@ -2,6 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import * as pkg from '../../package.json'
 import { scaleFontUp, scaleFontDown } from '../action-creators/scaleSize.js'
+import { makeStyles } from '@material-ui/core/styles'
+import Modal from '@material-ui/core/Modal'
 
 // constants
 import {
@@ -18,13 +20,44 @@ import {
   meta,
 } from '../util.js'
 
-export const Footer = connect(({ authenticated, status, user }) => ({
+const rand = () => {
+  return Math.round(Math.random() * 20) - 10
+}
+
+const getModalStyle = () => {
+  const top = 50 + rand()
+  const left = 50 + rand()
+
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+  }
+}
+
+const useStyles = makeStyles(theme => ({
+  paper: {
+    position: 'absolute',
+    width: 400,
+    backgroundColor: '#353535',
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
+}))
+
+export const Footer = connect(({ authenticated, status, user, importing, importingCompleted, importingCurrentItem, importingItemsLength }) => ({
   authenticated,
   status,
   tutorial: meta([EM_TOKEN, 'Settings', 'Tutorial']).On,
   tutorialStep: +getSetting('Tutorial Step')[0] || 1,
-  user
-}))(({ authenticated, status, tutorialStep, user, dispatch }) => {
+  user,
+  importing, importingCompleted, importingCurrentItem, importingItemsLength
+}))(({ authenticated, status, tutorialStep, user, dispatch, importing, importingCompleted, importingCurrentItem, importingItemsLength }) => {
+
+  const classes = useStyles()
+  // getModalStyle is not a pure function, we roll the style only on the first render
+  const [modalStyle] = React.useState(getModalStyle)
 
   // hide footer during tutorial
   // except for the last step that directs them to the Help link in the footer
@@ -55,5 +88,32 @@ export const Footer = connect(({ authenticated, status, user }) => ({
     {user ? <li><span className='dim'>Logged in as: </span>{user.email}</li> : null}
     {user ? <li><span className='dim'>User ID: </span><span className='mono'>{user.uid.slice(0, 6)}</span></li> : null}
     <li><span className='dim'>Version: </span><span title={pkg.brandVersion + '.' + pkg.version}>{pkg.brandVersion}.{pkg.version.split('.')[0]}</span></li>
+
+
+    <li>
+
+      <Modal
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+        open={importing}
+      >
+        <div style={modalStyle} className={classes.paper}>
+          <p id="simple-modal-description">
+            Importing {importingCurrentItem}/{importingItemsLength} thoughts...
+          </p>
+        </div>
+      </Modal>
+
+      <Modal
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+        open={importingCompleted}
+      >
+        <div style={modalStyle} className={classes.paper}>
+          <p id="simple-modal-description">Imported {importingItemsLength} thoughts</p>
+        </div>
+      </Modal>
+
+    </li>
   </ul>
 })

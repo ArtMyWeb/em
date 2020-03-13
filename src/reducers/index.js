@@ -39,6 +39,7 @@ import tutorial from './tutorial.js'
 import tutorialChoice from './tutorialChoice.js'
 import tutorialStep from './tutorialStep.js'
 import { setToolbarOverlay, prioritizeScroll } from './toolbarOverlay.js'
+import { setImporting, setImportingCompleted, setImportingCurrentItem, setImportingItemsLength } from './importInteraction.js'
 
 import { initialState } from '../util'
 
@@ -71,6 +72,10 @@ export default (state = initialState(), action) => {
     selectionChange,
     setCursor,
     setFirstSubthought,
+    setImporting,
+    setImportingCompleted,
+    setImportingCurrentItem,
+    setImportingItemsLength,
     settings,
     setToolbarOverlay,
     showModal,
